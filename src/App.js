@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
 
-const App = ({ rows = 10, cols = 10 }) => {
+const App = ({ rows = 15, cols = 15 }) => {
   const [grid, setGrid] = useState(
     Array.from({ length: rows }, () => Array(cols).fill(""))
   );
