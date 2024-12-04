@@ -1,4 +1,4 @@
-const { getFirestore, doc, getDoc } = require('firebase/firestore');
+const { getFirestore, doc, getDoc, query, where, getDocs, collection } = require('firebase/firestore');
 const { initializeApp } = require('firebase/app');
 require('dotenv').config();
 
@@ -14,40 +14,73 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-const getCountryOBJ = async (countryName) => {
-    try {
-        const docRef = doc(db, "countries", countryName);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            console.log("Document data:", docSnap.data());
-            return docSnap.data();
-        } else {
-            console.log("No such document!");
-            return null;
+class DB {
+/**
+ * METHODS -
+ *  getCountry(countryName: str)
+ *      returns country document from db
+ *
+ *  getCountryWithCharNumber(charNumber: number)
+ *      returns a list of contries with matching number of chars
+ */
+    constructor() {
+        this.db = getFirestore(app);
+    }
+
+     async getCountry(countryName) {
+        if (typeof countryName !== "string") {
+            throw new Error("Argument must be of string type");
         }
-    } catch (error) {
-        console.error("Error getting document:", error);
-        throw error;
+        try {
+            const docRef = doc(db, "countries", countryName);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                console.log("Document data:", docSnap.data());
+                return docSnap.data();
+            } else {
+                console.log("No such document!");
+                return null;
+            }
+        } catch (error) {
+            console.error("Error getting document:", error);
+            throw error;
+        }
+    }
+
+    async getCountryWithCharNumber(charNumber) {
+        if (typeof charNumber !== "number") {
+            throw new Error("Argument must be of number type");
+        }
+        try {
+            const q = query(collection(this.db, "countries"), where("charNumber", "==", charNumber));
+            const querySnapshot = await getDocs(q);
+            const results = [];
+            querySnapshot.forEach((doc) => {
+                results.push(doc.data());
+            });
+            return results;
+        } catch (error) {
+            console.error("Error querying documents:", error);
+            throw error;
+        }
     }
 }
 
-
-
-// Function to test if the database is connected
-const testDbConnection = async () => {
-    try {
-        const countryData = await getCountryOBJ("united states");
-        if (countryData) {
-            console.log("Database connected successfully and document retrieved.");
-        } else {
-            console.log("Document not found. Database connection might be successful.");
-        }
-    } catch (error) {
-        console.error("Error connecting to the database:", error);
-    }
-};
-
-// Call the function to test the connection
-// testDbConnection();
+// // Just gives me the ability to test my functions
+// // command to run - node src/db/firebaseDB.js
+// const dbInstance = new DB();
+// const testQuery = async () => {
+//     try {
+//         const documents = await dbInstance.getCountryWithCharNumber(6);
+//         if (documents.length > 0) {
+//             console.log(documents)
+//             console.log("Documents retrieved successfully.");
+//         } else {
+//             console.log("No documents found with the specified charNumber.");
+//         }
+//     } catch (error) {
+//         console.error("Error querying the database:", error);
+//     }
+// };
+// testQuery();
