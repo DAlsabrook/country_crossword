@@ -58,19 +58,22 @@ class DB {
     }
 
     async getHints(listCountries) {
-        // Takes a list of countries (strings) and gives hints
+        // Takes a list of countries (strings) and gives all hints
+        // Return format { "spain": ["Hint", "hint"], "russia": ["hint"] }
+        
         if (listCountries && listCountries.length > 0) {
             const hints = {};
 
             for (const country of listCountries) {
-                const docRef = this.db.collection('countries').doc(country);
-                const doc = await docRef.get();
-                if (doc.exists) {
-                    const data = doc.data();
+                const docRef = doc(this.db, "countries", country);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+
+                    const data = docSnap.data();
                     if (data.hints) {
                         hints[country] = data.hints;
                     } else {
-                        console.log(`No hints found for country: ${country}`);
+                        hints[country] = "No Hints Found"
                     }
                 } else {
                     console.log(`No document found for country: ${country}`);
@@ -90,15 +93,18 @@ class DB {
 // const dbInstance = new DB();
 // const testQuery = async () => {
 //     try {
-//         const documents = await dbInstance.getHints(['unitedkingdom', 'america']);
-//         if (documents.length > 0) {
+//         const documents = await dbInstance.getHints(['america', 'spain']);
+//         // const documents = await dbInstance.getCountries(10);
+//         if (documents.length > 0 || Object.keys(documents).length > 0) {
 //             console.log(documents)
-//             console.log("Documents retrieved successfully.");
 //         } else {
-//             console.log("No documents found with the specified charNumber.");
+//             console.log("No documents found.");
 //         }
 //     } catch (error) {
 //         console.error("Error querying the database:", error);
 //     }
 // };
-// testQuery();
+// testQuery().then(() => {
+//     process.exit();
+// });
+
