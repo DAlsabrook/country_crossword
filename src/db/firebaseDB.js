@@ -28,26 +28,6 @@ class DB {
         this.db = getFirestore(app);
     }
 
-     async getCountry(countryName) {
-        if (typeof countryName !== "string") {
-            throw new Error("Argument must be of string type");
-        }
-        try {
-            const docRef = doc(db, "countries", countryName);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                console.log("Document data:", docSnap.data());
-                return docSnap.data();
-            } else {
-                console.log("No such document!");
-                return null;
-            }
-        } catch (error) {
-            console.error("Error getting document:", error);
-            throw error;
-        }
-    }
-
     async getCountries(numberOfCountries) {
         // Returns a random list of country name
         // Call with the amount of countries you want ex: getCountries(10)
@@ -76,6 +56,33 @@ class DB {
             throw error;
         }
     }
+
+    async getHints(listCountries) {
+        // Takes a list of countries (strings) and gives hints
+        if (listCountries && listCountries.length > 0) {
+            const hints = {};
+
+            for (const country of listCountries) {
+                const docRef = this.db.collection('countries').doc(country);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.hints) {
+                        hints[country] = data.hints;
+                    } else {
+                        console.log(`No hints found for country: ${country}`);
+                    }
+                } else {
+                    console.log(`No document found for country: ${country}`);
+                }
+            }
+
+            return hints;
+        } else {
+            console.log('No countries provided');
+            return {};
+        }
+    }
 }
 
 // // Just gives me the ability to test my functions
@@ -83,7 +90,7 @@ class DB {
 // const dbInstance = new DB();
 // const testQuery = async () => {
 //     try {
-//         const documents = await dbInstance.getCountries(6);
+//         const documents = await dbInstance.getHints(['unitedkingdom', 'america']);
 //         if (documents.length > 0) {
 //             console.log(documents)
 //             console.log("Documents retrieved successfully.");
