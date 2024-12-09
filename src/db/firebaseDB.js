@@ -48,20 +48,31 @@ class DB {
         }
     }
 
-    async getCountryWithCharNumber(charNumber) {
-        if (typeof charNumber !== "number") {
-            throw new Error("Argument must be of number type");
+    async getCountries(numberOfCountries) {
+        // Returns a random list of country name
+        // Call with the amount of countries you want ex: getCountries(10)
+        if (typeof numberOfCountries !== "number" || numberOfCountries <= 0) {
+            throw new Error("Argument must be a positive integer");
         }
         try {
-            const q = query(collection(this.db, "countries"), where("charNumber", "==", charNumber));
+            const q = query(collection(this.db, "countries"));
             const querySnapshot = await getDocs(q);
-            const results = [];
+            const allCountries = [];
             querySnapshot.forEach((doc) => {
-                results.push(doc.data());
+                if (doc.data().name) {
+                    allCountries.push(doc.data().name);
+                }
             });
-            return results;
+
+            // Shuffle the array to get a random set of countries
+            const shuffledCountries = allCountries.sort(() => 0.5 - Math.random());
+
+            // Select the specified number of countries
+            const selectedCountries = shuffledCountries.slice(0, numberOfCountries);
+
+            return selectedCountries;
         } catch (error) {
-            console.error("Error querying documents:", error);
+            console.error("Error querying the database:", error);
             throw error;
         }
     }
@@ -72,7 +83,7 @@ class DB {
 // const dbInstance = new DB();
 // const testQuery = async () => {
 //     try {
-//         const documents = await dbInstance.getCountryWithCharNumber(6);
+//         const documents = await dbInstance.getCountries(6);
 //         if (documents.length > 0) {
 //             console.log(documents)
 //             console.log("Documents retrieved successfully.");
