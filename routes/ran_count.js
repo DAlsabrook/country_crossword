@@ -21,12 +21,12 @@ const countryHints = {
     AUSTRALIA: "Known for the Sydney Opera House and kangaroos.",
     INDIA: "Known for its spices, yoga, colorful festivals, and Bollywood movies",
     NEWZEALAND: "Known for its breathtaking landscapes",
-    SWEDEN:
-    GREENLAND:
-    ICELAND:
+    SWEDEN: "placeholder",
+    GREENLAND: "placeholder",
+    ICELAND: "placeholder"
 }
 
-router.get('/', (req, res) => {
+router.get('/countries', (req, res) => {
     if (countries.length === 0) {
         return res.status(404).json({ error: 'No countries found' });
     }
