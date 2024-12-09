@@ -49,4 +49,20 @@ router.get('/countries', (req, res) => {
     res.json({ countries: randomCountries });
 });
 
+router.get('/hints', (req, res) => {
+    const countriesList = req.query.countries ? req.query.countries.split(',') : [];
+
+    if (!countriesList || countriesList.length === 0) {
+        return res.status(400).json({ error: 'No countries provided' });
+    }
+
+    // Get hints for each country in the list
+    const hints = countriesList.map(country => {
+        const hint = countryHints[country];
+        return { country, hint: hint || "No hint available" };
+    });
+
+    res.json({ hints });
+});
+
 module.exports = router;
