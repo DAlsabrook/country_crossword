@@ -1,11 +1,15 @@
 const express = require('express');
-const countryRouter = require('../routes/ran_count');
+const countriesRouter = require('../routes/ran_count'); // Adjust the path as necessary
 const app = express();
 
-// Mount the router
-app.use('/', countryRouter);
+// Middleware
+app.use(express.json()); // For parsing JSON
 
-const PORT = 3000;
+// Routes
+app.use('/api', countriesRouter); // Mount the router at the '/api' base path
+
+// Start the Server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

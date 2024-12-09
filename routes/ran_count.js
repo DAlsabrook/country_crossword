@@ -30,8 +30,23 @@ router.get('/countries', (req, res) => {
     if (countries.length === 0) {
         return res.status(404).json({ error: 'No countries found' });
     }
-    const randomCountry = countries[Math.floor(Math.random() * countries.length)];
-    res.json({ country : randomCountry });
+
+    // Ensure we don't try to get more countries than exist
+    const numCountries = Math.min(10, countries.length);
+    
+    // Create a copy of the array to avoid modifying the original
+    let availableCountries = [...countries];
+    let randomCountries = [];
+    
+    // Select random countries
+    for (let i = 0; i < numCountries; i++) {
+        const randomIndex = Math.floor(Math.random() * availableCountries.length);
+        randomCountries.push(availableCountries[randomIndex]);
+        // Remove the selected country to avoid duplicates
+        availableCountries.splice(randomIndex, 1);
+    }
+    
+    res.json({ countries: randomCountries });
 });
 
 module.exports = router;
