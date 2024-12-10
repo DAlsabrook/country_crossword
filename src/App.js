@@ -17,7 +17,6 @@ const App = ({ rows = 20, cols = 20 }) => {
   const [numberedCells, setNumberedCells] = useState(new Map());
   const [acrossClues, setAcrossClues] = useState(new Map());
   const [downClues, setDownClues] = useState(new Map());
-  const [WORD_BANK, setWORD_BANK] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
