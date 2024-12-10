@@ -316,13 +316,16 @@ const App = () => {
   // Effect Hooks
   useEffect(() => {
     const fetchData = async () => {
+      console.log("Fetching..");
       try {
-        console.log("Fetching..");
         const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
+        console.log("2. Got response:", response.status);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         const countries = await response.json();
+        console.log("3. Parsed data:", countries.length, "countries");
+        console.log(countries);
         if (countries && countries.length > 0) {
           setWordBank(countries);
         }
