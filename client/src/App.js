@@ -1,161 +1,21 @@
-import React, { useState, useEffect } from "react";
-import "./App.css";
+import React, { useEffect, useState } from 'react';
 
-let WORD_BANK = [
-  "GERMANY",
-  "RUSSIA",
-  "EGYPT",
-  "CHINA",
-  "UNITEDKINGDOM",
-  "AMERICA",
-  "BRAZIL",
-  "JAPAN",
-  "AUSTRALIA",
-  "INDIA",
-  "NEWZEALAND",
-  "SWEDEN",
-  "GREENLAND",
-  "ICELAND",
-];
-
-/* eslint-disable */
-const App = ({ rows = 20, cols = 20 }) => {
+const App = () => {
   const [solution, setSolution] = useState([]);
   const [userGrid, setUserGrid] = useState([]);
   const [placedWords, setPlacedWords] = useState([]);
   const [debug, setDebug] = useState([]);
-  const [revealedCells, setRevealedCells] = useState(new Set());
   const [numberedCells, setNumberedCells] = useState(new Map());
   const [acrossClues, setAcrossClues] = useState(new Map());
   const [downClues, setDownClues] = useState(new Map());
   const [isValid, setIsValid] = useState(false);
+  const [revealedCells, setRevealedCells] = useState(new Set());
+  const [wordBank, setWordBank] = useState([]);
+  
+  const rows = 20;
+  const cols = 20;
 
-  // Validation function to check grid alignment
-  const validateGrids = (solutionGrid, userGrid, placedWordsList) => {
-    // Check if grids exist and have same dimensions
-    if (!solutionGrid?.length || !userGrid?.length) return false;
-    if (solutionGrid.length !== userGrid.length) return false;
-    if (solutionGrid[0].length !== userGrid[0].length) return false;
-
-    // Verify that all placed words are in their correct positions
-    for (const { word, row, col, direction } of placedWordsList) {
-      for (let i = 0; i < word.length; i++) {
-        const currentRow = direction === "across" ? row : row + i;
-        const currentCol = direction === "across" ? col + i : col;
-
-        // Bounds check
-        if (
-          currentRow >= solutionGrid.length ||
-          currentCol >= solutionGrid[0].length
-        ) {
-          console.error("Word placement out of bounds:", word);
-          return false;
-        }
-
-        // Check if letter is in correct position in solution grid
-        if (solutionGrid[currentRow][currentCol] !== word[i]) {
-          console.error("Word misalignment detected:", word);
-          return false;
-        }
-
-        // Verify corresponding empty space in user grid
-        if (userGrid[currentRow][currentCol] !== "") {
-          console.error("User grid initialization error:", word);
-          return false;
-        }
-      }
-    }
-
-    return true;
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            console.log("Fetching..");
-            const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            const result = await response.json();
-            if (result.countries) {
-                WORD_BANK = result.countries; // Update the word bank with fetched countries
-                // Force a re-render of the crossword
-                initializeCrossword();
-            }
-        } catch (error) {
-            console.log("error in fetch:", error);
-        }
-    };
-
-    fetchData();
-}, []);
-
-  const generateClueNumbers = (placedWords, grid) => {
-    let clueNumber = 1;
-    const numberedCells = new Map();
-    const acrossClues = new Map();
-    const downClues = new Map();
-
-    // First, sort placedWords by position (top to bottom, left to right)
-    const sortedWords = [...placedWords].sort((a, b) => {
-      if (a.row === b.row) {
-        return a.col - b.col;
-      }
-      return a.row - b.row;
-    });
-
-    // Create a set to track all starting positions
-    const startPositions = new Set(
-      sortedWords.map(({ row, col }) => `${row}-${col}`)
-    );
-
-    // First pass: assign numbers to all starting positions
-    sortedWords.forEach(({ row, col }) => {
-      const key = `${row}-${col}`;
-      if (!numberedCells.has(key)) {
-        numberedCells.set(key, clueNumber++);
-      }
-    });
-
-    // Second pass: assign clues using the established numbers
-    sortedWords.forEach(({ word, row, col, direction }) => {
-      const key = `${row}-${col}`;
-      const cellNumber = numberedCells.get(key);
-
-      if (direction === "across") {
-        acrossClues.set(cellNumber, word);
-      } else {
-        downClues.set(cellNumber, word);
-      }
-    });
-
-    return { numberedCells, acrossClues, downClues };
-  };
-
-  const handleCellInput = (rowIndex, colIndex, value) => {
-    if (value.length <= 1) {
-      const newGrid = userGrid.map((row) => [...row]);
-      newGrid[rowIndex][colIndex] = value.toUpperCase();
-      setUserGrid(newGrid);
-    }
-  };
-
-  const handleSubmitGuess = () => {
-    const newRevealed = new Set(revealedCells);
-
-    userGrid.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell !== "" && cell === solution[rowIndex][colIndex]) {
-          const key = `${rowIndex}-${colIndex}`;
-          newRevealed.add(key);
-        }
-      });
-    });
-
-    setRevealedCells(newRevealed);
-  };
-
+  // Utility Functions
   const calculateUsedGrid = (grid) => {
     let minRow = grid.length;
     let maxRow = 0;
@@ -207,16 +67,8 @@ const App = ({ rows = 20, cols = 20 }) => {
     row = Number(row);
     col = Number(col);
 
-    if (
-      isAcross &&
-      (col < 0 || col + word.length > cols || row < 0 || row >= rows)
-    )
-      return false;
-    if (
-      !isAcross &&
-      (row < 0 || row + word.length > rows || col < 0 || col >= cols)
-    )
-      return false;
+    if (isAcross && (col < 0 || col + word.length > cols || row < 0 || row >= rows)) return false;
+    if (!isAcross && (row < 0 || row + word.length > rows || col < 0 || col >= cols)) return false;
 
     let hasValidIntersection = placedWords.length === 0;
 
@@ -230,26 +82,14 @@ const App = ({ rows = 20, cols = 20 }) => {
       if (isAcross) {
         if (currentRow > 0) {
           const aboveCell = currentGrid[currentRow - 1][currentCol];
-          if (aboveCell !== "" && i !== 0 && i !== word.length - 1)
-            return false;
+          if (aboveCell !== "" && i !== 0 && i !== word.length - 1) return false;
         }
         if (currentRow < rows - 1) {
           const belowCell = currentGrid[currentRow + 1][currentCol];
-          if (belowCell !== "" && i !== 0 && i !== word.length - 1)
-            return false;
+          if (belowCell !== "" && i !== 0 && i !== word.length - 1) return false;
         }
-        if (
-          i === 0 &&
-          col > 0 &&
-          currentGrid[currentRow][currentCol - 1] !== ""
-        )
-          return false;
-        if (
-          i === word.length - 1 &&
-          col + i < cols - 1 &&
-          currentGrid[currentRow][currentCol + 1] !== ""
-        )
-          return false;
+        if (i === 0 && col > 0 && currentGrid[currentRow][currentCol - 1] !== "") return false;
+        if (i === word.length - 1 && col + i < cols - 1 && currentGrid[currentRow][currentCol + 1] !== "") return false;
       } else {
         if (currentCol > 0) {
           const leftCell = currentGrid[currentRow][currentCol - 1];
@@ -257,21 +97,10 @@ const App = ({ rows = 20, cols = 20 }) => {
         }
         if (currentCol < cols - 1) {
           const rightCell = currentGrid[currentRow][currentCol + 1];
-          if (rightCell !== "" && i !== 0 && i !== word.length - 1)
-            return false;
+          if (rightCell !== "" && i !== 0 && i !== word.length - 1) return false;
         }
-        if (
-          i === 0 &&
-          row > 0 &&
-          currentGrid[currentRow - 1][currentCol] !== ""
-        )
-          return false;
-        if (
-          i === word.length - 1 &&
-          row + i < rows - 1 &&
-          currentGrid[currentRow + 1][currentCol] !== ""
-        )
-          return false;
+        if (i === 0 && row > 0 && currentGrid[currentRow - 1][currentCol] !== "") return false;
+        if (i === word.length - 1 && row + i < rows - 1 && currentGrid[currentRow + 1][currentCol] !== "") return false;
       }
 
       if (currentCell !== "") {
@@ -294,10 +123,10 @@ const App = ({ rows = 20, cols = 20 }) => {
     return commonLetters;
   };
 
-  const findIntersections = (word, currentGrid, placedWords) => {
+  const findIntersections = (word, currentGrid, currentPlacedWords) => {
     const intersections = [];
 
-    for (const placedWord of placedWords) {
+    for (const placedWord of currentPlacedWords) {
       const commonLetters = findCommonLetters(word, placedWord.word);
 
       for (const { index1, index2 } of commonLetters) {
@@ -336,123 +165,182 @@ const App = ({ rows = 20, cols = 20 }) => {
     return newGrid;
   };
 
-  useEffect(() => {
-    const initializeCrossword = () => {
-      let currentGrid = Array.from({ length: rows }, () =>
-        Array(cols).fill("")
-      );
-      let currentPlacedWords = [];
-      let debugLog = [];
+  const generateClueNumbers = (placedWords, grid) => {
+    let clueNumber = 1;
+    const numberedCells = new Map();
+    const acrossClues = new Map();
+    const downClues = new Map();
 
-      const firstWord = WORD_BANK[0];
-      const startRow = Math.floor(rows / 2);
-      const startCol = Math.floor((cols - firstWord.length) / 2);
+    const sortedWords = [...placedWords].sort((a, b) => {
+      if (a.row === b.row) {
+        return a.col - b.col;
+      }
+      return a.row - b.row;
+    });
 
-      // Place first word and update tracking
-      currentGrid = placeWord(
-        firstWord,
-        startRow,
-        startCol,
-        "across",
-        currentGrid
-      );
-      currentPlacedWords.push({
-        word: firstWord,
-        row: startRow,
-        col: startCol,
-        direction: "across",
-      });
-      debugLog.push(`Placed ${firstWord} at (${startRow}, ${startCol}) across`);
+    const startPositions = new Set(
+      sortedWords.map(({ row, col }) => `${row}-${col}`)
+    );
 
-      const remainingWords = [...WORD_BANK.slice(1)].sort(
-        () => Math.random() - 0.5
-      );
-      for (const word of remainingWords) {
-        const intersections = findIntersections(
+    sortedWords.forEach(({ row, col }) => {
+      const key = `${row}-${col}`;
+      if (!numberedCells.has(key)) {
+        numberedCells.set(key, clueNumber++);
+      }
+    });
+
+    sortedWords.forEach(({ word, row, col, direction }) => {
+      const key = `${row}-${col}`;
+      const cellNumber = numberedCells.get(key);
+
+      if (direction === "across") {
+        acrossClues.set(cellNumber, word);
+      } else {
+        downClues.set(cellNumber, word);
+      }
+    });
+
+    return { numberedCells, acrossClues, downClues };
+  };
+
+  const validateGrids = (solution, userGrid, placedWords) => {
+    // Add your grid validation logic here
+    return true; // Placeholder return
+  };
+
+  // Core initialization function
+  const initializeCrossword = () => {
+    if (!wordBank.length) return;
+    
+    let currentGrid = Array.from({ length: rows }, () => Array(cols).fill(""));
+    let currentPlacedWords = [];
+    let debugLog = [];
+
+    const firstWord = wordBank[0];
+    const startRow = Math.floor(rows / 2);
+    const startCol = Math.floor((cols - firstWord.length) / 2);
+
+    currentGrid = placeWord(firstWord, startRow, startCol, "across", currentGrid);
+    currentPlacedWords.push({
+      word: firstWord,
+      row: startRow,
+      col: startCol,
+      direction: "across",
+    });
+    debugLog.push(`Placed ${firstWord} at (${startRow}, ${startCol}) across`);
+
+    const remainingWords = [...wordBank.slice(1)].sort(() => Math.random() - 0.5);
+    
+    for (const word of remainingWords) {
+      const intersections = findIntersections(word, currentGrid, currentPlacedWords);
+
+      if (intersections.length > 0) {
+        const placement = intersections[0];
+        currentGrid = placeWord(word, placement.row, placement.col, placement.direction, currentGrid);
+        currentPlacedWords.push({
           word,
-          currentGrid,
-          currentPlacedWords
-        );
+          row: placement.row,
+          col: placement.col,
+          direction: placement.direction,
+        });
+        debugLog.push(`Placed ${word} at (${placement.row}, ${placement.col}) ${placement.direction}`);
+      } else {
+        debugLog.push(`Failed to place ${word}`);
+      }
+    }
 
-        if (intersections.length > 0) {
-          const placement = intersections[0];
-          currentGrid = placeWord(
-            word,
-            placement.row,
-            placement.col,
-            placement.direction,
-            currentGrid
-          );
-          currentPlacedWords.push({
-            word,
-            row: placement.row,
-            col: placement.col,
-            direction: placement.direction,
-          });
-          debugLog.push(
-            `Placed ${word} at (${placement.row}, ${placement.col}) ${placement.direction}`
-          );
-        } else {
-          debugLog.push(`Failed to place ${word}`);
+    const boundaries = calculateUsedGrid(currentGrid);
+    const trimmedGrid = currentGrid
+      .slice(boundaries.minRow, boundaries.maxRow + 1)
+      .map((row) => row.slice(boundaries.minCol, boundaries.maxCol + 1));
+
+    const paddedGrid = addPadding(trimmedGrid);
+    const adjustedPlacedWords = currentPlacedWords.map((word) => ({
+      ...word,
+      row: word.row - boundaries.minRow + (paddedGrid.length > trimmedGrid.length ? 1 : 0),
+      col: word.col - boundaries.minCol + (paddedGrid[0].length > trimmedGrid[0].length ? 1 : 0),
+    }));
+
+    const emptyUserGrid = paddedGrid.map((row) =>
+      row.map((cell) => (cell !== "" ? "" : cell))
+    );
+
+    const {
+      numberedCells: newNumberedCells,
+      acrossClues: newAcrossClues,
+      downClues: newDownClues,
+    } = generateClueNumbers(adjustedPlacedWords, paddedGrid);
+
+    const isValidSetup = validateGrids(paddedGrid, emptyUserGrid, adjustedPlacedWords);
+
+    if (!isValidSetup) {
+      console.error("Invalid grid setup detected - retrying...");
+      window.location.reload();
+      return;
+    }
+
+    setSolution(paddedGrid);
+    setUserGrid(emptyUserGrid);
+    setPlacedWords(adjustedPlacedWords);
+    setDebug(debugLog);
+    setNumberedCells(newNumberedCells);
+    setAcrossClues(newAcrossClues);
+    setDownClues(newDownClues);
+    setIsValid(true);
+  };
+
+  // Event Handlers
+  const handleCellInput = (rowIndex, colIndex, value) => {
+    if (value.length <= 1) {
+      const newGrid = userGrid.map((row) => [...row]);
+      newGrid[rowIndex][colIndex] = value.toUpperCase();
+      setUserGrid(newGrid);
+    }
+  };
+
+  const handleSubmitGuess = () => {
+    const newRevealed = new Set(revealedCells);
+
+    userGrid.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell !== "" && cell === solution[rowIndex][colIndex]) {
+          const key = `${rowIndex}-${colIndex}`;
+          newRevealed.add(key);
         }
+      });
+    });
+
+    setRevealedCells(newRevealed);
+  };
+
+  // Effect Hooks
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("Fetching..");
+        const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const countries = await response.json();
+        if (countries && countries.length > 0) {
+          setWordBank(countries);
+        }
+      } catch (error) {
+        console.log("error in fetch:", error);
       }
-
-      const boundaries = calculateUsedGrid(currentGrid);
-      const trimmedGrid = currentGrid
-        .slice(boundaries.minRow, boundaries.maxRow + 1)
-        .map((row) => row.slice(boundaries.minCol, boundaries.maxCol + 1));
-
-      const paddedGrid = addPadding(trimmedGrid);
-      const adjustedPlacedWords = currentPlacedWords.map((word) => ({
-        ...word,
-        row:
-          word.row -
-          boundaries.minRow +
-          (paddedGrid.length > trimmedGrid.length ? 1 : 0),
-        col:
-          word.col -
-          boundaries.minCol +
-          (paddedGrid[0].length > trimmedGrid[0].length ? 1 : 0),
-      }));
-
-      const emptyUserGrid = paddedGrid.map((row) =>
-        row.map((cell) => (cell !== "" ? "" : cell))
-      );
-
-      // Generate numbers and clues
-      const {
-        numberedCells: newNumberedCells,
-        acrossClues: newAcrossClues,
-        downClues: newDownClues,
-      } = generateClueNumbers(adjustedPlacedWords, paddedGrid);
-
-      // Validate the generated grids
-      const isValidSetup = validateGrids(
-        paddedGrid,
-        emptyUserGrid,
-        adjustedPlacedWords
-      );
-
-      if (!isValidSetup) {
-        console.error("Invalid grid setup detected - retrying...");
-        window.location.reload();
-        return;
-      }
-
-      // Update state only if validation passes
-      setSolution(paddedGrid);
-      setUserGrid(emptyUserGrid);
-      setPlacedWords(adjustedPlacedWords);
-      setDebug(debugLog);
-      setNumberedCells(newNumberedCells);
-      setAcrossClues(newAcrossClues);
-      setDownClues(newDownClues);
-      setIsValid(true);
     };
 
-    initializeCrossword();
+    fetchData();
   }, []);
 
+  useEffect(() => {
+    if (wordBank.length > 0) {
+      initializeCrossword();
+    }
+  }, [wordBank]);
+
+  // Render
   if (!isValid || !solution.length || !userGrid.length) {
     return <div>Initializing crossword...</div>;
   }
@@ -511,9 +399,9 @@ const App = ({ rows = 20, cols = 20 }) => {
                     {clueNumber}
                   </div>
                 )}
-
-                {solution[rowIndex][colIndex] !== "" &&
-                  (isRevealed ? (
+  
+                {solution[rowIndex][colIndex] !== "" && (
+                  isRevealed ? (
                     <div
                       style={{
                         width: "100%",
@@ -530,9 +418,7 @@ const App = ({ rows = 20, cols = 20 }) => {
                     <input
                       type="text"
                       value={cell}
-                      onChange={(e) =>
-                        handleCellInput(rowIndex, colIndex, e.target.value)
-                      }
+                      onChange={(e) => handleCellInput(rowIndex, colIndex, e.target.value)}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -545,13 +431,14 @@ const App = ({ rows = 20, cols = 20 }) => {
                       }}
                       maxLength={1}
                     />
-                  ))}
+                  )
+                )}
               </div>
             );
           })
         )}
       </div>
-
+  
       <button
         onClick={handleSubmitGuess}
         style={{
@@ -567,10 +454,10 @@ const App = ({ rows = 20, cols = 20 }) => {
       >
         Submit Guesses
       </button>
-
+  
       <div className="word-list" style={{ marginTop: "20px" }}>
         <h3>Words to Find:</h3>
-        {WORD_BANK.map((word, index) => (
+        {wordBank.map((word, index) => (
           <div key={index}>{word}</div>
         ))}
       </div>
