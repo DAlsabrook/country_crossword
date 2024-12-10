@@ -1,4 +1,4 @@
-const { getFirestore, doc, getDoc, query, where, getDocs, collection } = require('firebase/firestore');
+const { getFirestore, doc, getDoc, query, getDocs, collection } = require('firebase/firestore');
 const { initializeApp } = require('firebase/app');
 require('dotenv').config();
 
@@ -16,21 +16,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 class DB {
-/**
- * METHODS -
- *  getCountry(countryName: str)
- *      returns country document from db
- *
- *  getCountryWithCharNumber(charNumber: number)
- *      returns a list of contries with matching number of chars
- */
     constructor() {
         this.db = getFirestore(app);
     }
 
     async getCountries(numberOfCountries) {
-        // Returns a random list of country name
-        // Call with the amount of countries you want ex: getCountries(10)
+        // Returns a random list of countries with their hints
+        // Call with the amount of countries you want ex: getRandomCountriesWithHints(10)
         if (typeof numberOfCountries !== "number" || numberOfCountries <= 0) {
             throw new Error("Argument must be a positive integer");
         }
@@ -40,7 +32,7 @@ class DB {
             const allCountries = [];
             querySnapshot.forEach((doc) => {
                 if (doc.data().name) {
-                    allCountries.push(doc.data().name);
+                    allCountries.push(doc.id); // Use doc.id to get the document name (country name)
                 }
             });
 
@@ -50,30 +42,17 @@ class DB {
             // Select the specified number of countries
             const selectedCountries = shuffledCountries.slice(0, numberOfCountries);
 
-            return selectedCountries;
-        } catch (error) {
-            console.error("Error querying the database:", error);
-            throw error;
-        }
-    }
-
-    async getHints(listCountries) {
-        // Takes a list of countries (strings) and gives all hints
-        // Return format { "spain": ["Hint", "hint"], "russia": ["hint"] }
-
-        if (listCountries && listCountries.length > 0) {
+            // Get hints for the selected countries
             const hints = {};
-
-            for (const country of listCountries) {
+            for (const country of selectedCountries) {
                 const docRef = doc(this.db, "countries", country);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-
                     const data = docSnap.data();
                     if (data.hints) {
                         hints[country] = data.hints;
                     } else {
-                        hints[country] = "No Hints Found"
+                        hints[country] = ["No Hints Found"];
                     }
                 } else {
                     console.log(`No document found for country: ${country}`);
@@ -81,24 +60,23 @@ class DB {
             }
 
             return hints;
-        } else {
-            console.log('No countries provided');
-            return {};
+        } catch (error) {
+            console.error("Error querying the database:", error);
+            throw error;
         }
     }
 }
+
 module.exports = DB;
 
-
-// // Just gives me the ability to test my functions
-// // command to run - node src/db/firebaseDB.js
+// Just gives me the ability to test my functions
+// command to run - node src/db/firebaseDB.js
 // const dbInstance = new DB();
 // const testQuery = async () => {
 //     try {
-//         const documents = await dbInstance.getHints(['america', 'spain']);
-//         // const documents = await dbInstance.getCountries(10);
-//         if (documents.length > 0 || Object.keys(documents).length > 0) {
-//             console.log(documents)
+//         const documents = await dbInstance.getCountries(10);
+//         if (Object.keys(documents).length > 0) {
+//             console.log(documents);
 //         } else {
 //             console.log("No documents found.");
 //         }
@@ -109,4 +87,3 @@ module.exports = DB;
 // testQuery().then(() => {
 //     process.exit();
 // });
-
