@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const DB = require('../src/db/firebaseDB.js')
 
 // List of countries
 const countries = [
@@ -26,28 +27,14 @@ const countryHints = {
     ICELAND: "placeholder"
 }
 
-router.get('/countries', (req, res) => {
+router.get('/countries', async (req, res) => {
     if (countries.length === 0) {
         return res.status(404).json({ error: 'No countries found' });
     }
-
-    // Ensure we don't try to get more countries than exist
-    const numCountries = Math.min(10, countries.length);
-    
-    // Create a copy of the array to avoid modifying the original
-    let availableCountries = [...countries];
-    let randomCountries = [];
-    
-    // Select random countries
-    for (let i = 0; i < numCountries; i++) {
-        const randomIndex = Math.floor(Math.random() * availableCountries.length);
-        randomCountries.push(availableCountries[randomIndex]);
-        // Remove the selected country to avoid duplicates
-        availableCountries.splice(randomIndex, 1);
-    }
-    
-    res.json({ countries: randomCountries });
+    const db = new DB();
+    res.json(await db.getCountries(10));
 });
+
 
 router.get('/hints', (req, res) => {
     const countriesList = req.query.countries ? req.query.countries.split(',') : [];

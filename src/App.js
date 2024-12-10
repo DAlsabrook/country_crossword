@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "../src/App.css";
 
-const WORD_BANK = [
+let WORD_BANK = [
   "GERMANY", "RUSSIA", "EGYPT", "CHINA",
   "UNITEDKINGDOM", "AMERICA", "BRAZIL", "JAPAN",
   "AUSTRALIA", "INDIA", "NEWZEALAND", "SWEDEN", "GREENLAND", "ICELAND"
 ];
 
+/* eslint-disable */
 const App = ({ rows = 20, cols = 20 }) => {
   const [solution, setSolution] = useState([]);
   const [userGrid, setUserGrid] = useState([]);
@@ -16,6 +17,27 @@ const App = ({ rows = 20, cols = 20 }) => {
   const [numberedCells, setNumberedCells] = useState(new Map());
   const [acrossClues, setAcrossClues] = useState(new Map());
   const [downClues, setDownClues] = useState(new Map());
+  const [WORD_BANK, setWORD_BANK] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("Fetching..")
+        const response = await fetch("http://localhost:3000/api/countries");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const result = await response.json();
+        console.log(result)
+        // NEED TO DO SOMETHING HERE TO GET THE COUNTRIES INTO THE CROSSWORD
+        // Use state to hold the list and conditionally render the crossword based on the word bank state
+      } catch (error) {
+        console.log('error in fetch')
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const generateClueNumbers = (placedWords, grid) => {
     let clueNumber = 1;
@@ -33,7 +55,7 @@ const App = ({ rows = 20, cols = 20 }) => {
     placedWords.forEach(({ word, row, col, direction }) => {
       const key = `${row}-${col}`;
       const cellNumber = numberedCells.get(key);
-      
+
       if (direction === "across") {
         acrossClues.set(cellNumber, word);
       } else {
@@ -54,7 +76,7 @@ const App = ({ rows = 20, cols = 20 }) => {
 
   const handleSubmitGuess = () => {
     const newRevealed = new Set(revealedCells);
-    
+
     userGrid.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell !== "" && cell === solution[rowIndex][colIndex]) {
@@ -63,7 +85,7 @@ const App = ({ rows = 20, cols = 20 }) => {
         }
       });
     });
-    
+
     setRevealedCells(newRevealed);
   };
 
@@ -94,23 +116,23 @@ const App = ({ rows = 20, cols = 20 }) => {
 
   const addPadding = (grid) => {
     let paddedGrid = [...grid.map(row => [...row])];
-    
+
     if (grid.some(row => row[0] !== "")) {
       paddedGrid = paddedGrid.map(row => ["", ...row]);
     }
-    
+
     if (grid.some(row => row[row.length - 1] !== "")) {
       paddedGrid = paddedGrid.map(row => [...row, ""]);
     }
-    
+
     if (grid[0].some(cell => cell !== "")) {
       paddedGrid = [Array(paddedGrid[0].length).fill(""), ...paddedGrid];
     }
-    
+
     if (grid[grid.length - 1].some(cell => cell !== "")) {
       paddedGrid = [...paddedGrid, Array(paddedGrid[0].length).fill("")];
     }
-    
+
     return paddedGrid;
   };
 
@@ -176,16 +198,16 @@ const App = ({ rows = 20, cols = 20 }) => {
 
   const findIntersections = (word, currentGrid, placedWords) => {
     const intersections = [];
-    
+
     for (const placedWord of placedWords) {
       const commonLetters = findCommonLetters(word, placedWord.word);
-      
+
       for (const { index1, index2 } of commonLetters) {
         if (placedWord.direction === "across") {
           const row = placedWord.row;
           const col = placedWord.col + index2;
           const newRow = row - index1;
-          
+
           if (validatePlacement(word, newRow, col, false, currentGrid)) {
             intersections.push({ row: newRow, col, direction: "down" });
           }
@@ -193,14 +215,14 @@ const App = ({ rows = 20, cols = 20 }) => {
           const row = placedWord.row + index2;
           const col = placedWord.col;
           const newCol = col - index1;
-          
+
           if (validatePlacement(word, row, newCol, true, currentGrid)) {
             intersections.push({ row, col: newCol, direction: "across" });
           }
         }
       }
     }
-    
+
     return intersections;
   };
 
@@ -260,7 +282,7 @@ const App = ({ rows = 20, cols = 20 }) => {
       col: word.col - boundaries.minCol + (paddedGrid[0].length > trimmedGrid[0].length ? 1 : 0)
     }));
 
-    const { numberedCells: newNumberedCells, acrossClues: newAcrossClues, downClues: newDownClues } = 
+    const { numberedCells: newNumberedCells, acrossClues: newAcrossClues, downClues: newDownClues } =
       generateClueNumbers(adjustedPlacedWords, paddedGrid);
 
     setSolution(paddedGrid);
@@ -274,7 +296,7 @@ const App = ({ rows = 20, cols = 20 }) => {
 
   return (
     <div className="crossword-container">
-      <div className="grid" style={{ 
+      <div className="grid" style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${userGrid[0]?.length || 0}, 40px)`,
         gap: '1px',
@@ -315,16 +337,16 @@ const App = ({ rows = 20, cols = 20 }) => {
                     {clueNumber}
                   </div>
                 )}
-                
+
                 {solution[rowIndex][colIndex] !== "" && (
                   isRevealed ? (
-                    <div style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
-                      backgroundColor: '#e6ffe6'
+                      backgroundColor: '#4CAF50'
                     }}>
                       {solution[rowIndex][colIndex]}
                     </div>
@@ -352,8 +374,8 @@ const App = ({ rows = 20, cols = 20 }) => {
           })
         ))}
       </div>
-      
-      <button 
+
+      <button
         onClick={handleSubmitGuess}
         style={{
           marginTop: '20px',
@@ -378,5 +400,5 @@ const App = ({ rows = 20, cols = 20 }) => {
     </div>
   );
 };
-
+/* eslint-enable */
 export default App;

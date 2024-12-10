@@ -1,9 +1,11 @@
 const express = require('express');
 const countriesRouter = require('../routes/ran_count'); // Adjust the path as necessary
 const app = express();
+const cors = require('cors');
 
 // Middleware
 app.use(express.json()); // For parsing JSON
+app.use(cors());
 
 // Routes
 app.use('/api', countriesRouter); // Mount the router at the '/api' base path
