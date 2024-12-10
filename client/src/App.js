@@ -71,23 +71,25 @@ const App = ({ rows = 20, cols = 20 }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        console.log("Fetching..");
-        const response = await fetch("http://localhost:3000/api/countries");
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+        try {
+            console.log("Fetching..");
+            const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            const result = await response.json();
+            if (result.countries) {
+                WORD_BANK = result.countries; // Update the word bank with fetched countries
+                // Force a re-render of the crossword
+                initializeCrossword();
+            }
+        } catch (error) {
+            console.log("error in fetch:", error);
         }
-        const result = await response.json();
-        console.log(result);
-        // NEED TO DO SOMETHING HERE TO GET THE COUNTRIES INTO THE CROSSWORD
-        // Use state to hold the list and conditionally render the crossword based on the word bank state
-      } catch (error) {
-        console.log("error in fetch");
-      }
     };
 
     fetchData();
-  }, []);
+}, []);
 
   const generateClueNumbers = (placedWords, grid) => {
     let clueNumber = 1;
