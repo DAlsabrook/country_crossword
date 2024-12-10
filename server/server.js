@@ -1,5 +1,5 @@
 const express = require('express');
-const countriesRouter = require('../routes/ran_count'); // Adjust the path as necessary
+const countriesRouter = require('./routes/ran_count.js');
 const app = express();
 const cors = require('cors');
 

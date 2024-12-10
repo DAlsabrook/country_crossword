@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const DB = require('../src/db/firebaseDB.js');
-const logger = require('../src/utils/logger'); 
+const DB = require('../db/firebaseDB.js');
+const logger = require('../db/utils/logger.js');
 
 router.get('/countries', async (req, res) => {
     const db = new DB();
