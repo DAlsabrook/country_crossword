@@ -1,6 +1,6 @@
 const { getFirestore, doc, getDoc, query, getDocs, collection } = require('firebase/firestore');
 const { initializeApp } = require('firebase/app');
-const logger = require('../utils/logger'); // Import the logger
+const logger = require('./utils/logger.js'); // Import the logger
 require('dotenv').config();
 
 // Your web app's Firebase configuration
