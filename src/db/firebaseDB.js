@@ -1,5 +1,6 @@
 const { getFirestore, doc, getDoc, query, getDocs, collection } = require('firebase/firestore');
 const { initializeApp } = require('firebase/app');
+const logger = require('../utils/logger'); // Import the logger
 require('dotenv').config();
 
 // Your web app's Firebase configuration
@@ -18,11 +19,28 @@ const app = initializeApp(firebaseConfig);
 class DB {
     constructor() {
         this.db = getFirestore(app);
+        this.checkConnection();
+    }
+
+    async checkConnection() {
+        try {
+            const q = query(collection(this.db, "countries"));
+            const querySnapshot = await getDocs(q);
+
+            const dataList = [];
+            querySnapshot.forEach((doc) => {
+                dataList.push({ id: doc.id, data: doc.data() });
+            });
+
+            logger.info(`Database connected successfully. Documents: ${JSON.stringify(dataList)}`);
+        } catch (error) {
+            logger.error("Error connecting to the database:", error);
+        }
     }
 
     async getCountries(numberOfCountries) {
         // Returns a random list of countries with their hints
-        // Call with the amount of countries you want ex: getRandomCountriesWithHints(10)
+        // Call with the amount of countries you want ex: getCountries(10)
         if (typeof numberOfCountries !== "number" || numberOfCountries <= 0) {
             throw new Error("Argument must be a positive integer");
         }
@@ -55,13 +73,13 @@ class DB {
                         hints[country] = ["No Hints Found"];
                     }
                 } else {
-                    console.log(`No document found for country: ${country}`);
+                    logger.warn(`No document found for country: ${country}`);
                 }
             }
 
             return hints;
         } catch (error) {
-            console.error("Error querying the database:", error);
+            logger.error("Error querying the database:", error);
             throw error;
         }
     }
@@ -76,12 +94,12 @@ module.exports = DB;
 //     try {
 //         const documents = await dbInstance.getCountries(10);
 //         if (Object.keys(documents).length > 0) {
-//             console.log(documents);
+//             logger.info(documents);
 //         } else {
-//             console.log("No documents found.");
+//             logger.info("No documents found.");
 //         }
 //     } catch (error) {
-//         console.error("Error querying the database:", error);
+//         logger.error("Error querying the database:", error);
 //     }
 // };
 // testQuery().then(() => {
