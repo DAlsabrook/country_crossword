@@ -60,7 +60,7 @@ class DB {
     async getHints(listCountries) {
         // Takes a list of countries (strings) and gives all hints
         // Return format { "spain": ["Hint", "hint"], "russia": ["hint"] }
-        
+
         if (listCountries && listCountries.length > 0) {
             const hints = {};
 
@@ -87,6 +87,8 @@ class DB {
         }
     }
 }
+module.exports = DB;
+
 
 // // Just gives me the ability to test my functions
 // // command to run - node src/db/firebaseDB.js
