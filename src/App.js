@@ -11,7 +11,7 @@ const App = () => {
   const [isValid, setIsValid] = useState(false);
   const [revealedCells, setRevealedCells] = useState(new Set());
   const [wordBank, setWordBank] = useState([]);
-  
+
   const rows = 20;
   const cols = 20;
 
@@ -211,7 +211,7 @@ const App = () => {
   // Core initialization function
   const initializeCrossword = () => {
     if (!wordBank.length) return;
-    
+
     let currentGrid = Array.from({ length: rows }, () => Array(cols).fill(""));
     let currentPlacedWords = [];
     let debugLog = [];
@@ -230,7 +230,7 @@ const App = () => {
     debugLog.push(`Placed ${firstWord} at (${startRow}, ${startCol}) across`);
 
     const remainingWords = [...wordBank.slice(1)].sort(() => Math.random() - 0.5);
-    
+
     for (const word of remainingWords) {
       const intersections = findIntersections(word, currentGrid, currentPlacedWords);
 
@@ -316,7 +316,7 @@ const App = () => {
   // Effect Hooks
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Fetching..");
+      console.log("Fetching.....");
       try {
         const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
         console.log("2. Got response:", response.status);
@@ -402,7 +402,7 @@ const App = () => {
                     {clueNumber}
                   </div>
                 )}
-  
+
                 {solution[rowIndex][colIndex] !== "" && (
                   isRevealed ? (
                     <div
@@ -441,7 +441,7 @@ const App = () => {
           })
         )}
       </div>
-  
+
       <button
         onClick={handleSubmitGuess}
         style={{
@@ -457,7 +457,7 @@ const App = () => {
       >
         Submit Guesses
       </button>
-  
+
       <div className="word-list" style={{ marginTop: "20px" }}>
         <h3>Words to Find:</h3>
         {wordBank.map((word, index) => (
