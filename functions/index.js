@@ -15,7 +15,7 @@ exports.getCountries = functions.https.onRequest(async (req, res) => {
 
     snapshot.forEach((doc) => {
       // doc.id will give us "america", "china", etc.
-      countries.push(doc.id.toUpperCase());
+      countries.push(doc.id);
     });
 
     // Shuffle the array to get a random set of countries
@@ -27,9 +27,9 @@ exports.getCountries = functions.https.onRequest(async (req, res) => {
     // Get hints for the selected countries
     const countriesAndHints = {};
     for (const country of selectedCountries) {
-      const docRef = doc(db, "countries", country);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
+      const docRef = db.collection("countries").doc(country);
+      const docSnap = await docRef.get();
+      if (docSnap.exists) {
         const data = docSnap.data();
         if (data.hints) {
           countriesAndHints[country] = data.hints;
