@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
+    "build:client": "react-scripts build",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
