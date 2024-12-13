@@ -5,9 +5,11 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const logger = require('./utils/logger.js');
 
+logger.info("Initializing Firebase admin...");
 admin.initializeApp();
 
 const app = express();
+logger.info("Express app initialized.");
 
 // Swagger setup
 const swaggerOptions = {
@@ -29,6 +31,7 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+logger.info("Swagger documentation set up at /api-docs.");
 
 // Get countries route
 /**
@@ -53,12 +56,15 @@ app.get("/getCountries", async (req, res) => {
 
   try {
     const db = admin.firestore();
+    logger.info("Querying countries collection...");
     const snapshot = await db.collection("countries").get();
     const countries = [];
 
     snapshot.forEach((doc) => {
       countries.push(doc.id);
     });
+
+    logger.info(`Retrieved ${countries.length} countries from the database.`);
 
     const shuffledCountries = countries.sort(() => 0.5 - Math.random());
     const selectedCountries = shuffledCountries.slice(0, 10);
@@ -70,12 +76,12 @@ app.get("/getCountries", async (req, res) => {
       if (docSnap.exists) {
         const data = docSnap.data();
         countriesAndHints[country] = data.hints || ["No Hints Found"];
+        logger.info(`Retrieved hints for country: ${country}`);
       } else {
         logger.warn(`No document found for country: ${country}`);
       }
     }
 
-    console.log("Retrieved countries:", countriesAndHints); // For debugging
     return res.json(countriesAndHints);
   } catch (error) {
     logger.error("Error querying the database:", error);
@@ -83,5 +89,5 @@ app.get("/getCountries", async (req, res) => {
   }
 });
 
-// Export the Express app as a Firebase Function
+// Exporting the Express app as a Firebase Function
 exports.api = functions.https.onRequest(app);
