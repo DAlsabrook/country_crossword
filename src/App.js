@@ -1,7 +1,5 @@
-import { ObjectSchema } from 'firebase/vertexai';
 import React, { useEffect, useState } from 'react';
 
-// eslint-disable
 const App = () => {
   const [solution, setSolution] = useState([]);
   const [userGrid, setUserGrid] = useState([]);
@@ -212,7 +210,6 @@ const App = () => {
 
   // Core initialization function
   const initializeCrossword = () => {
-
     if (!wordBank.length) return;
 
     let currentGrid = Array.from({ length: rows }, () => Array(cols).fill(""));
@@ -322,15 +319,15 @@ const App = () => {
       console.log("Fetching.....");
       try {
         const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
-
+        console.log("2. Got response:", response.status);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         const countries = await response.json();
-        console.log("3. Parsed data:");
+        console.log("3. Parsed data:", countries.length, "countries");
         console.log(countries);
-        if (countries && Object.keys(countries).length > 0) {
-          setWordBank(Object.keys(countries))
+        if (countries && countries.length > 0) {
+          setWordBank(countries);
         }
       } catch (error) {
         console.log("error in fetch:", error);
@@ -348,10 +345,7 @@ const App = () => {
 
   // Render
   if (!isValid || !solution.length || !userGrid.length) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <div>Initializing crossword..</div>
-        <div className="spinner">spinner</div>
-      </div>
+    return <div>Initializing crossword...</div>;
   }
 
   return (
