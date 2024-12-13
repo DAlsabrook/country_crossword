@@ -1,1 +1,3 @@
-winston logger, firebase-swagger, unit test
+- winston logger
+- swagger (https://us-central1-country-crossword.cloudfunctions.net/api/api-docs/)
+- unit test
