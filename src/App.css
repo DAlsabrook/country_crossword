@@ -1,5 +1,16 @@
+.crossword-and-controls {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: auto;
+  justify-content: center;
+  color: white;
+
+}
 .crossword-container {
   padding: 1rem;
+  background-color: black;
+  color: white;
 }
 
 .controls {
@@ -90,4 +101,9 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+.clues-container {
+  display: flex;
+  flex-direction: column;
 }
