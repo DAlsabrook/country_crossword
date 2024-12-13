@@ -258,7 +258,7 @@ const App = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/getCountries");
+        const response = await fetch("https://us-central1-country-crossword.cloudfunctions.net/api/getCountries");
 
         if (!response.ok) {
           throw new Error("Network response was not ok");
