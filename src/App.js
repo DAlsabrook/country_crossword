@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Confetti from 'react-confetti';
 import "./App.css"
 
 const App = () => {
@@ -13,6 +14,7 @@ const App = () => {
   const [revealedCells, setRevealedCells] = useState(new Set());
   const [wordBank, setWordBank] = useState([]);
   const [hints, setHints] = useState({});
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const rows = 15;
   const cols = 15;
@@ -242,16 +244,24 @@ const App = () => {
 
   const handleSubmitGuess = () => {
     const newRevealed = new Set(revealedCells);
+    let allCorrect = true;
 
     userGrid.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell !== "" && cell === solution[rowIndex][colIndex]) {
           const key = `${rowIndex}-${colIndex}`;
           newRevealed.add(key);
+        } else if (cell !== solution[rowIndex][colIndex]) {
+          allCorrect = false;
         }
       });
     });
+
     setRevealedCells(newRevealed);
+
+    if (allCorrect) {
+      setShowConfetti(true);
+    }
   };
 
   // Effect Hooks
@@ -290,7 +300,14 @@ const App = () => {
       <h3>{title}</h3>
       {Array.from(clues).map(([number, { word, hints }]) => (
         <div key={number} className="clue">
-          <strong>{number}.</strong> {hints.join(", ")} <em>({word.length} letters)</em>
+          <strong>{number}.</strong> <em style={{ paddingLeft: '1em' }}>({word.length} letters)</em><br />
+          {hints.map((hint, index) => (
+            <React.Fragment key={index}>
+              <span style={{ paddingLeft: '1em' }}>{hint}</span>
+              <br />
+            </React.Fragment>
+          ))}
+          <br />
         </div>
       ))}
     </div>
@@ -307,6 +324,7 @@ const App = () => {
 
   return (
     <div className='crossword-and-controls'>
+      {showConfetti && <Confetti />}
       <div className="crossword-container">
         <div
           className="grid"
@@ -399,31 +417,50 @@ const App = () => {
           )}
         </div>
 
+      </div>
+      <div className='controlsandhints'>
+        <div className="clues-container" style={{ marginTop: "20px", display: "flex", justifyContent: "space-between" }}>
+          <Clues title="Across" clues={acrossClues} />
+          <Clues title="Down" clues={downClues} />
         </div>
-        <div className='controlsandhints'>
-          <div className="clues-container" style={{ marginTop: "20px", display: "flex", justifyContent: "space-between" }}>
-            <Clues title="Across" clues={acrossClues} />
-            <Clues title="Down" clues={downClues} />
-          </div>
-        <button
-          onClick={handleSubmitGuess}
-          style={{
-            marginTop: "20px",
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Submit Guesses
-        </button>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-evenly"
+        }}>
+          <button
+            onClick={handleSubmitGuess}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Submit Guesses
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#f44336",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            New Puzzle
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default App;
-
