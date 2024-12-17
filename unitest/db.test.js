@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-const { api } = require("../index");
+const { api } = require("../functions/index");
 const request = require("supertest");
 
 
@@ -43,12 +43,12 @@ describe('/getCountries API route', () => {
         dbMock.doc().get.mockImplementation(async (docId) => {
             const doc = mockCountries.find((d) => d.id === docId);
             return {
-                exists: !! doc,
-                data: doc ? doc.data : () => null,
+                exists: !! doc, // True if document exist
+                data: doc ? doc.data : () => null, // return data function if doc exist
             };
         });
 
-        // Use supertest to make Get request
+        // Send Get request
         const res = await request(api).get("/getCountries");
 
         // Validate HTTP response status
