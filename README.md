@@ -21,7 +21,7 @@ Country Crossword is a crossword puzzle application where users can solve crossw
 
 The Swagger documentation for the API is available at:
 
-- **URL**: [https://us-central1-country-crossword.cloudfunctions.net/api/api-docs](https://us-central1-country-crossword.cloudfunctions.net/api/api-docs)
+- **URL**: [https://us-central1-country-crossword.cloudfunctions.net/api/api-docs/](https://us-central1-country-crossword.cloudfunctions.net/api/api-docs/)
 
 ## Logging
 
